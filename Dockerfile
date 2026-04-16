@@ -92,3 +92,6 @@ LABEL org.duckietown.label.module.type="${REPO_NAME}" \
 RUN echo 'source /code/catkin_ws/devel/setup.bash' >> ~/.bashrc
 # Default location when entering the docker container
 WORKDIR /code/catkin_ws
+
+# Declare runtime mount points commonly used for controller/device access in dev.
+VOLUME ["/dev/input", "/run/udev"]

@@ -38,7 +38,7 @@ Nodes and Topics Added:
 Git clone project
 ```bash
 dts devel build -H <duckiebot_name> -f
-dts devel run -R <duckiebot_name> --cmd bash
+dts devel run -R <duckiebot_name> --device /dev/input/js0:/dev/input/js0 --cmd bash
 ```
 
 ```bash
