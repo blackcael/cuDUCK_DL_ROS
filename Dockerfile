@@ -92,3 +92,14 @@ LABEL org.duckietown.label.module.type="${REPO_NAME}" \
 RUN echo 'source /code/catkin_ws/devel/setup.bash' >> ~/.bashrc
 # Default location when entering the docker container
 WORKDIR /code/catkin_ws
+
+# Startup gate for joystick/controller availability.
+COPY ./launchers/wait_for_joystick.sh /usr/local/bin/wait_for_joystick.sh
+RUN chmod +x /usr/local/bin/wait_for_joystick.sh
+ENV WAIT_FOR_JOYSTICK=1
+ENV WAIT_FOR_JOYSTICK_INTERVAL=1
+ENV WAIT_FOR_JOYSTICK_TIMEOUT=0
+ENV WAIT_FOR_JOYSTICK_PATTERN=/dev/input/js*
+
+# Override default command so launch waits for joystick before starting.
+CMD ["bash", "-lc", "/usr/local/bin/wait_for_joystick.sh dt-launcher-${DT_LAUNCHER}"]
