@@ -1,0 +1,7 @@
+<launch>
+    <arg name="veh" default="$(env VEHICLE_NAME)"/>
+
+    <group ns="$(arg veh)">
+        <node name="image_inspector" pkg="test_image_publisher" type="inspect_image.py"/>
+    </group>
+</launch>

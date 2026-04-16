@@ -1,0 +1,5 @@
+masks_params:
+  red_rho: 1
+  red_thresh: 15
+  red_minLineLength: 5
+  red_maxLineGap: 15

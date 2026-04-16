@@ -1,0 +1,10 @@
+my_pid_params:
+  pid_angle:
+    p: -5.0
+    i: 0.0
+    d: -0.05.
+  pid_distance:
+    p: -12.0
+    i: 0.0
+    d: -0.05
+  vehicle_speed: 0.05

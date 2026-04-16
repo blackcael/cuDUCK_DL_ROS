@@ -1,0 +1,97 @@
+<launch>
+
+    <arg name="veh" default="$(env VEHICLE_NAME)"/>
+    <arg name="ai_trafo_mode" default="cb" doc="'cb' for colo balance only; 'both' for color balance and linear trafo"/>
+    <arg name="ai_interval" default="5" doc="interval with which the linear trafo gets updated. color balance is performed every second."/>
+    <arg name="verbose" default="false"/>
+
+    <!-- start Duckietown nodes -->
+    <arg name="demo_name" value="lane_following"/>
+
+    <!-- April Tag Node (added by Cael 11.25.2025- This is a node from the demos that does all the april tag work for us)-->
+    <include file = "$(find duckietown_demos)/launch/apriltag_detector.launch"/>
+
+    <!-- Vehicle Detection Node (added by Chris Chinh 12.05.2025- This should allow for reading from the TOF sensor on duckiebot) -->
+    <node pkg="vehicle_detection" type="vehicle_detection_node.py" name="vehicle_detection">
+        <remap from="~image" to="$(env VEHICLE_NAME)/camera_node/image/compressed/"/>
+        <param name="process_frequency" value="3.0" type="double"/>
+        <param name="circlepattern_dims" value="[7, 3]" type="yaml"/>
+        <param name="blobdetector_min_area" value="10.0" type="double"/>
+        <param name="blobdetector_min_dist_between_blobs" value="7.0" type="double"/>
+    </node>
+
+    <include file="$(find led_emitter)/launch/led_emitter_node.launch"> 
+        <arg name="veh" value="$(env VEHICLE_NAME)"/> 
+    </include>
+
+    <!-- start basic args -->
+    <include file="$(find duckietown_demos)/launch/master.launch">
+
+        <!-- Basic arguments -->
+        <arg name="veh" value="$(arg veh)"/>
+        <arg name="demo_name" value="$(arg demo_name)"/>
+        <arg name="param_file_name" value="default" />
+        <arg name="visualization" value="true" />
+
+        <!-- Finite state machine -->
+        <arg name="fsm" value="true"/>
+        <arg name="/fsm/logic_gate" value="false"/>
+
+        <!-- Camera and anti intagram -->
+        <arg name="/camera/raw" value="false" />
+        <arg name="anti_instagram" value="true" />
+
+        <!-- Lane Following stack -->
+        <arg name="lane_following" value="true"/>
+        <arg name="/lane_following/line_detection" value="false"/>       
+        <arg name="line_detector_param_file_name" value="default" />
+        <arg name="/lane_following/ground_projection" value="true"/>
+        <arg name="/lane_following/lane_filter" value="true"/>
+        <arg name="/lane_following/stop_line_filter" value="true"/>
+        <arg name="/lane_following/lane_controller" value="false"/>
+        <param name="/$(arg veh)/lane_filter_node/debug" value="false"/>
+    </include>
+
+    <group ns="$(env VEHICLE_NAME)">
+        <node pkg="intersection" name="IntersectionFSM" type="IntersectionNode.py"/>
+        <node pkg="pid_control" name="lane_control" type="lane_control.py"/>
+        <node pkg="masks" name="ground_projection" type="ground_projection.py"/>
+        <node name="odom_calc" pkg="intersection" type="odom_calc.py"/>
+
+        <!-- <param name="stop_line_filter_node/stop_distance" value="0.22" type="double"/>
+        <param name="stop_line_filter_node/min_segs" value="15" type="int"/>
+        <param name="stop_line_filter_node/max_y" value="0.1" type="double"/> -->
+        <param name="stop_line_filter_node/stop_distance" value="0.3" type="double"/>
+        <param name="stop_line_filter_node/min_segs" value="8" type="int"/>
+        <param name="stop_line_filter_node/max_y" value="0.1" type="double"/>
+        <param name="stopline_debug" value="False" type="bool" />
+
+
+        <param name="lane_control_node/velocity" value="0.2" type="double"/>
+
+        <param name="Kp_pos" value="9.0" type="double" />
+        <param name="Ki_pos" value="0.00" type="double" />
+        <param name="Kd_pos" value="0.00" type="double" />
+
+        <param name="Kp_angle" value="3.50" type="double" />
+        <param name="Ki_angle" value="0.00" type="double" />
+        <param name="Kd_angle" value="0.00" type="double" />
+
+        <param name="min_stop_certainty" value="0.2" type="double"/>
+        <param name="min_stop_buf_size" value="10" type="int" />
+
+
+        <param name="blink_debug" value="False" type="bool" />
+        <param name="blink_led_num" value="0" type="int" />
+        <param name="blink_freq" value = "0.0" type = "double" />
+
+        <param name="turn_debug" value="False" type="bool" />
+        <param name="turn_type" value="1" type="int" />
+
+        <!-- rosparam set /turbogoose/kinematics_node/trim -0.15 -->
+
+        <rosparam file="$(find intersection)/launch/turn_params.yaml" command="load"/>
+        <rosparam file="$(find masks)/launch/color_filter_params.yaml" command="load"/>
+    </group>
+
+</launch>
