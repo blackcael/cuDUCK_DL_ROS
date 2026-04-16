@@ -33,25 +33,46 @@ def _pick_joystick(preferred_name_substring):
     js.init()
     return js
 
+
+def _wait_for_joystick(preferred_name_substring, poll_interval):
+    rospy.loginfo(
+        "Waiting for controller connection (preferred_name='%s')...",
+        preferred_name_substring,
+    )
+    while not rospy.is_shutdown():
+        pygame.joystick.quit()
+        pygame.joystick.init()
+        pygame.event.pump()
+
+        js = _pick_joystick(preferred_name_substring)
+        if js is not None:
+            return js
+
+        rospy.loginfo_throttle(
+            5.0,
+            "No controller detected yet. Retrying every %.2f sec...",
+            poll_interval,
+        )
+        rospy.sleep(max(0.1, poll_interval))
+    return None
+
+
 def main():
     rospy.init_node("gamepad_to_joy")
     pub = rospy.Publisher("joy", Joy, queue_size=1)
     pygame.init()
     pygame.joystick.init()
 
-    if pygame.joystick.get_count() == 0:
-        rospy.logerr("No controller detected.")
-        return
-
     rate_hz = rospy.get_param("~rate_hz", 20)
     preferred_name = rospy.get_param("~preferred_name", "8BitDo")
     axis_map = rospy.get_param("~axis_map", DEFAULT_AXIS_MAP)
     invert_y = rospy.get_param("~invert_y", True)
     deadzone = rospy.get_param("~deadzone", 0.08)
+    connect_poll_interval = rospy.get_param("~connect_poll_interval", 1.0)
 
-    js = _pick_joystick(preferred_name)
+    js = _wait_for_joystick(preferred_name, connect_poll_interval)
     if js is None:
-        rospy.logerr("No controller detected.")
+        rospy.logwarn("Controller wait aborted due to node shutdown.")
         return
 
     rospy.loginfo("Using joystick: '%s' (axes=%d, buttons=%d)",
