@@ -8,7 +8,7 @@ import cv2
 import rospy
 import torch 
 from model_prototypes.ALVINN import ALVINN
-from model_prototypes.ALVINNITA import ALVINNITA
+# from model_prototypes.ALVINNITA import ALVINNITA
 from model_prototypes.CALVINN import CALVINN
 from model_prototypes.MELVINN import MELVINN
 
@@ -34,19 +34,19 @@ def _require_model_utils(model_utils_dir):
 
 
 def _build_model_from_checkpoint(model_name, image_size, state_dict):
-    if model_name.startswith("alvinnita"):
+    # if model_name.startswith("alvinnita"):
 
-        history_frames = int(state_dict["position_embedding"].shape[0])
-        output_size = int(state_dict["head.4.weight"].shape[0])
-        input_dim = int(state_dict["frame_encoder.0.weight"].shape[1])
-        channels = max(1, input_dim // (image_size[0] * image_size[1]))
-        model = ALVINNITA(
-            imagesize_hw=image_size,
-            color_channels=channels,
-            history_frames=history_frames,
-            output_size=output_size,
-        )
-        return model, channels
+    #     history_frames = int(state_dict["position_embedding"].shape[0])
+    #     output_size = int(state_dict["head.4.weight"].shape[0])
+    #     input_dim = int(state_dict["frame_encoder.0.weight"].shape[1])
+    #     channels = max(1, input_dim // (image_size[0] * image_size[1]))
+    #     model = ALVINNITA(
+    #         imagesize_hw=image_size,
+    #         color_channels=channels,
+    #         history_frames=history_frames,
+    #         output_size=output_size,
+    #     )
+    #     return model, channels
 
     if model_name.startswith("calvinn"):
         channels = int(state_dict["features.0.net.0.weight"].shape[1])
@@ -69,6 +69,7 @@ def load_model_from_ros_params():
     model_utils_dir = rospy.get_param("~model_utils_dir", DEFAULT_MODEL_UTILS_DIR)
     device_name = str(rospy.get_param("~device", "cuda" if torch.cuda.is_available() else "cpu"))
     device = torch.device(device_name)
+    print(f"CDEBUG, devicename = {device_name}")
 
     _require_model_utils(model_utils_dir)
     checkpoint = torch.load(model_path, map_location=device, weights_only=False)

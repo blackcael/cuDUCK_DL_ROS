@@ -1,0 +1,27 @@
+...
+Traceback (most recent call last):
+  File "/code/catkin_ws/devel/lib/dl_drive/dl_drive.py", line 15, in <module>
+    exec(compile(fh.read(), python_script, 'exec'), context)
+  File "/code/catkin_ws/src/cuDUCK_DL/packages/dl_drive/src/dl_drive.py", line 96, in <module>
+    dl_drive_node = DL_Drive_Node()
+  File "/code/catkin_ws/src/cuDUCK_DL/packages/dl_drive/src/dl_drive.py", line 35, in __init__
+    loaded = load_model_from_ros_params()
+  File "/code/catkin_ws/src/cuDUCK_DL/packages/dl_drive/src/model_loader.py", line 75, in load_model_from_ros_params
+    checkpoint = torch.load(model_path, map_location=device, weights_only=False)
+  File "/usr/local/lib/python3.8/dist-packages/torch/serialization.py", line 1026, in load
+    return _load(opened_zipfile,
+  File "/usr/local/lib/python3.8/dist-packages/torch/serialization.py", line 1438, in _load
+    result = unpickler.load()
+  File "/usr/local/lib/python3.8/dist-packages/torch/serialization.py", line 1408, in persistent_load
+    typed_storage = load_tensor(dtype, nbytes, key, _maybe_decode_ascii(location))
+  File "/usr/local/lib/python3.8/dist-packages/torch/serialization.py", line 1382, in load_tensor
+    wrap_storage=restore_location(storage, location),
+  File "/usr/local/lib/python3.8/dist-packages/torch/serialization.py", line 1311, in restore_location
+    return default_restore_location(storage, str(map_location))
+  File "/usr/local/lib/python3.8/dist-packages/torch/serialization.py", line 391, in default_restore_location
+    result = fn(storage, location)
+  File "/usr/local/lib/python3.8/dist-packages/torch/serialization.py", line 266, in _cuda_deserialize
+    device = validate_cuda_device(location)
+  File "/usr/local/lib/python3.8/dist-packages/torch/serialization.py", line 250, in validate_cuda_device
+    raise RuntimeError('Attempting to deserialize object on a CUDA '
+RuntimeError: Attempting to deserialize object on a CUDA device but torch.cuda.is_available() is False. If you are running on a CPU-only machine, please use torch.load with map_location=torch.device('cpu') to map your storages to the CPU.
