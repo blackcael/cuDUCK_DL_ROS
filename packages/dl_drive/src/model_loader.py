@@ -67,7 +67,14 @@ def _build_model_from_checkpoint(model_name, image_size, state_dict):
 def load_model_from_ros_params():
     model_path = rospy.get_param("~model_path", DEFAULT_MODEL_PATH)
     model_utils_dir = rospy.get_param("~model_utils_dir", DEFAULT_MODEL_UTILS_DIR)
-    device_name = str(rospy.get_param("~device", "cuda" if torch.cuda.is_available() else "cpu"))
+    requested_device = str(rospy.get_param("~device", "auto")).strip().lower()
+    if requested_device == "auto":
+        device_name = "cuda" if torch.cuda.is_available() else "cpu"
+    elif requested_device.startswith("cuda") and not torch.cuda.is_available():
+        rospy.logwarn("CUDA requested but unavailable; falling back to CPU.")
+        device_name = "cpu"
+    else:
+        device_name = requested_device
     device = torch.device(device_name)
     print(f"CDEBUG, devicename = {device_name}")
 
