@@ -3,14 +3,14 @@
     <arg name="use_duckietown_stack" default="true"/>
     <arg name="use_led_emitter" default="true"/>
     <arg name="model_path" default="$(find dl_drive)/models/alvinn_latest.pt"/>
-    <arg name="model_utils_dir" default="$(find dl_drive)/src/model_prototypes"/>
+    <arg name="model_utils_dir" default="$(find dl_drive)/src"/>
     <arg name="allow_simonn" default="false"/>
     <arg name="device" default="cuda"/>
     <arg name="ai_trafo_mode" default="cb" doc="'cb' for colo balance only; 'both' for color balance and linear trafo"/>
     <arg name="ai_interval" default="5" doc="interval with which the linear trafo gets updated. color balance is performed every second."/>
     <arg name="verbose" default="false"/>
 
-	<node name="dl_drive" pkg="dl_drive" type="src/dl_drive.py">
+	<node name="dl_drive" pkg="dl_drive" type="dl_drive.py">
         <param name="model_path" value="$(arg model_path)"/>
         <param name="model_utils_dir" value="$(arg model_utils_dir)"/>
         <param name="allow_simonn" value="$(arg allow_simonn)"/>

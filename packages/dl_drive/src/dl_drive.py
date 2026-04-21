@@ -2,11 +2,16 @@
 
 import rospy
 import os
+import sys
 import torch
 
 from sensor_msgs.msg import CompressedImage
 from duckietown_msgs.msg import WheelsCmdStamped
 from cv_bridge import CvBridge
+
+THIS_DIR = os.path.dirname(os.path.abspath(__file__))
+if THIS_DIR not in sys.path:
+    sys.path.insert(0, THIS_DIR)
 
 from helper_functions import steering_bin_to_wheel_cmd
 from model_loader import load_model_from_ros_params, preprocess_bgr_image
