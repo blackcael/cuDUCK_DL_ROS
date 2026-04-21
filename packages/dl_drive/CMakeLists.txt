@@ -25,6 +25,16 @@ catkin_install_python(PROGRAMS
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
+install(FILES
+  src/helper_functions.py
+  src/model_loader.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+install(DIRECTORY src/model_prototypes
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
 install(DIRECTORY launch models
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
