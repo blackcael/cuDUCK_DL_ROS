@@ -10,7 +10,7 @@
     <arg name="ai_interval" default="5" doc="interval with which the linear trafo gets updated. color balance is performed every second."/>
     <arg name="verbose" default="false"/>
 
-	<node name="dl_drive" pkg="dl_drive" type="dl_drive.py">
+	<node name="dl_drive" pkg="dl_drive" type="src/dl_drive.py">
         <param name="model_path" value="$(arg model_path)"/>
         <param name="model_utils_dir" value="$(arg model_utils_dir)"/>
         <param name="allow_simonn" value="$(arg allow_simonn)"/>
