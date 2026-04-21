@@ -1,2 +1,7 @@
 opencv-python-headless
-pygame
+
+# Pytorch (python 3.8 Compatible)
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.2.2
+torchvision==0.17.2
+torchaudio==2.2.2
