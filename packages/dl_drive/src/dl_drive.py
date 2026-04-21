@@ -1,20 +1,15 @@
 #!/usr/bin/env python3
 
 import rospy
-import cv2
-import numpy as np
-import math
 import os
 import torch
 
-from sensor_msgs.msg import Image, CompressedImage
+from sensor_msgs.msg import CompressedImage
 from duckietown_msgs.msg import WheelsCmdStamped
 from cv_bridge import CvBridge
 
 from helper_functions import steering_bin_to_wheel_cmd
-
-
-
+from model_loader import load_model_from_ros_params, preprocess_bgr_image
 
 DUCKIEBOT = os.environ.get("VEHICLE_NAME")
 
@@ -32,6 +27,11 @@ class DL_Drive_Node:
         # Class Variables
         self.bridge = CvBridge()
         self.image_size = (32,32)
+        loaded = load_model_from_ros_params()
+        self.model = loaded.model
+        self.device = loaded.device
+        self.image_size = loaded.image_size
+        self.model_input_channels = loaded.model_input_channels
 
         # Subscribers
         rospy.Subscriber(
@@ -49,9 +49,6 @@ class DL_Drive_Node:
             queue_size=10,
         )
 
-        # Load Model
-
-
         # Compensate for Bad Trim
         # if DUCKIEBOT == "turbogoose":
         #     rospy.set_param(f"/{DUCKIEBOT}/kinematics_node/trim", -0.15)
@@ -59,8 +56,7 @@ class DL_Drive_Node:
     # Call Backs
     def dl_callback(self, compressed_img_msg):
         img = self.bridge.compressed_imgmsg_to_cv2(compressed_img_msg, "bgr8")
-        new_image = cv2.resize(img, self.image_size, interpolation=cv2.INTER_NEAREST)
-        wheels_cmd = self.get_wheels_commands_from_image(new_image)
+        wheels_cmd = self.get_wheels_commands_from_image(img)
         self.pub_car_cmd.publish(wheels_cmd)
 
     def angle_from_logits(self, logits):
@@ -75,8 +71,15 @@ class DL_Drive_Node:
 
 
     def get_wheels_commands_from_image(self, img):
-        # 1) Pass image through the model (returns logits)
-        logits = self.model(img)
+        # 1) Preprocess image and run the model
+        model_input = preprocess_bgr_image(
+            img,
+            self.image_size,
+            self.model_input_channels,
+            self.device,
+        )
+        with torch.no_grad():
+            logits = self.model(model_input)
         # 2) Convert Logits into Directions
         v_l, v_r = steering_bin_to_wheel_cmd(logits)
         # 3) Convert Angle into Message

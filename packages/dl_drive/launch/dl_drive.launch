@@ -1,24 +1,33 @@
 <launch>
-
-
-	<node name="dl_drive" pkg="dl_drive" type="dl_drive.py"/>
-
     <arg name="veh" default="$(env VEHICLE_NAME)"/>
+    <arg name="use_duckietown_stack" default="true"/>
+    <arg name="use_led_emitter" default="true"/>
+    <arg name="model_path" default="$(find dl_drive)/models/alvinn_latest.pt"/>
+    <arg name="model_utils_dir" default="$(find dl_drive)/src/model_prototypes"/>
+    <arg name="allow_simonn" default="false"/>
+    <arg name="device" default="cuda"/>
     <arg name="ai_trafo_mode" default="cb" doc="'cb' for colo balance only; 'both' for color balance and linear trafo"/>
     <arg name="ai_interval" default="5" doc="interval with which the linear trafo gets updated. color balance is performed every second."/>
     <arg name="verbose" default="false"/>
 
+	<node name="dl_drive" pkg="dl_drive" type="dl_drive.py">
+        <param name="model_path" value="$(arg model_path)"/>
+        <param name="model_utils_dir" value="$(arg model_utils_dir)"/>
+        <param name="allow_simonn" value="$(arg allow_simonn)"/>
+        <param name="device" value="$(arg device)"/>
+    </node>
+
     <!-- start Duckietown nodes -->
     <arg name="demo_name" value="lane_following"/>
 
-    <include file="$(find led_emitter)/launch/led_emitter_node.launch">
+    <include if="$(arg use_led_emitter)" file="$(find led_emitter)/launch/led_emitter_node.launch">
 
         <arg name="veh" value="$(env VEHICLE_NAME)"/>
 
     </include>
     
     <!-- start basic args -->
-    <include file="$(find duckietown_demos)/launch/master.launch">
+    <include if="$(arg use_duckietown_stack)" file="$(find duckietown_demos)/launch/master.launch">
 
         <!-- Basic arguments -->
         <arg name="veh" value="$(arg veh)"/>

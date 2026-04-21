@@ -1,8 +1,0 @@
-color_filter_params:
-  debug_color: true
-  wminh: 0
-  wmins: 0
-  wminv: 120
-  wmaxh: 180
-  wmaxs: 80
-  wmaxv: 255
