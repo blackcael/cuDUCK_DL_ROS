@@ -1,18 +1,25 @@
 #!/bin/bash
 
 path_to_repo="../"
+mode="$1"
+shift || true
 
-if [ "$1" == "lab4_masking" ]; then
+if [ "$mode" == "lab4_masking" ]; then
     lab_specific_launcher="launcher-masking"
-elif [ "$1" == "lab4_lines" ]; then
+elif [ "$mode" == "lab4_lines" ]; then
     lab_specific_launcher="launcher-lines"
-elif [ "$1" == "lab5_pid" ]; then
+elif [ "$mode" == "lab5_pid" ]; then
     lab_specific_launcher="launcher-pid"
-elif [ "$1" == "final"]; then
+elif [ "$mode" == "final" ]; then
     lab_specific_launcher="launcher_intersection"
+elif [ "$mode" == "dl_drive" ]; then
+    lab_specific_launcher="launcher-dl-drive"
 else
-    echo "Incorrect lab number"
-    exit 0
+    echo "Usage: $0 {lab4_masking|lab4_lines|lab5_pid|final|dl_drive} [launcher args]"
+    echo "Examples:"
+    echo "  $0 dl_drive -a"
+    echo "  $0 dl_drive -c --device cuda"
+    exit 1
 fi
 # if [ "$2" == "" ]; then
     #   path_to_repo= $pwd
@@ -25,6 +32,6 @@ fi
 #     exit 0
 # fi
 
-cd $path_to_repo
+cd "$path_to_repo"
 
-dts devel run -X -L $lab_specific_launcher
+dts devel run -X -L "$lab_specific_launcher" -- "$@"
