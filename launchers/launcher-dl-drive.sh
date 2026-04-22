@@ -23,7 +23,7 @@ dt-launchfile-init
 # packages/dl_drive/models.
 
 MODELS_DIR="${DT_REPO_PATH}/packages/dl_drive/models"
-MODEL_FILE="alvinn_latest.pt"
+MODEL_FILE="${DL_DRIVE_MODEL_FILE:-alvinn_latest.pt}"
 DEVICE="${DL_DRIVE_DEVICE:-auto}"
 
 print_usage() {
@@ -34,6 +34,7 @@ print_usage() {
     echo "  -m              Use MELVINN (melvinn_latest.pt)"
     echo "  --model NAME    Use model in models dir (NAME or NAME.pt or NAME_latest.pt)"
     echo "  --device VALUE  ROS device param (default: auto or DL_DRIVE_DEVICE env)"
+    echo "  Env fallback:   DL_DRIVE_MODEL_FILE, DL_DRIVE_DEVICE"
     echo "  -h, --help      Show this help"
 }
 
