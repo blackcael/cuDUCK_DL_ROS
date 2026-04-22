@@ -3,6 +3,7 @@
 import rospy
 import os
 import sys
+import time
 import torch
 
 from sensor_msgs.msg import CompressedImage
@@ -84,7 +85,10 @@ class DL_Drive_Node:
             self.device,
         )
         with torch.no_grad():
+            inference_start = time.perf_counter()
             logits = self.model(model_input)
+            inference_ms = (time.perf_counter() - inference_start) * 1000.0
+        rospy.logdebug("dl_drive model inference time: %.3f ms", inference_ms)
         # 2) Convert Logits into Directions
         v_l, v_r = steering_bin_to_wheel_cmd(logits)
         # 3) Convert Angle into Message
