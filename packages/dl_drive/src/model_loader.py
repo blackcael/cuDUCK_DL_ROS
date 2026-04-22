@@ -8,13 +8,24 @@ import cv2
 import rospy
 import torch 
 from model_prototypes.ALVINN import ALVINN
-# from model_prototypes.ALVINNITA import ALVINNITA
+from model_prototypes.ALVINNITA import ALVINNITA
 from model_prototypes.CALVINN import CALVINN
 from model_prototypes.MELVINN import MELVINN
 
 
 PKG_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DEFAULT_MODEL_PATH = os.path.join(PKG_DIR, "models", "alvinn_latest.pt")
+
+USE_MODEL = "M"
+
+if USE_MODEL == "M":
+    DEFAULT_MODEL_PATH = os.path.join(PKG_DIR, "models", "melvinn_latest.pt")
+if USE_MODEL == "A":
+    DEFAULT_MODEL_PATH = os.path.join(PKG_DIR, "models", "alvinn_latest.pt")
+if USE_MODEL == "AA":
+    DEFAULT_MODEL_PATH = os.path.join(PKG_DIR, "models", "alvinnita_latest.pt")
+if USE_MODEL == "C":
+    DEFAULT_MODEL_PATH = os.path.join(PKG_DIR, "models", "calvinn_latest.pt")
+
 DEFAULT_MODEL_UTILS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "model_prototypes")
 
 
@@ -33,20 +44,52 @@ def _require_model_utils(model_utils_dir):
         sys.path.append(model_utils_dir)
 
 
-def _build_model_from_checkpoint(model_name, image_size, state_dict):
-    # if model_name.startswith("alvinnita"):
+# def _build_model_from_checkpoint(model_name, image_size, state_dict):
+#     rospy.logwarn(f"NOTE building model: {model_name}...")
+#     if model_name.startswith("alvinnita"):
+        
+#         history_frames = int(state_dict["position_embedding"].shape[0])
+#         output_size = int(state_dict["head.4.weight"].shape[0])
+#         input_dim = int(state_dict["frame_encoder.0.weight"].shape[1])
+#         channels = max(1, input_dim // (image_size[0] * image_size[1]))
+#         model = ALVINNITA(
+#             imagesize_hw=image_size,
+#             color_channels=channels,
+#             history_frames=history_frames,
+#             output_size=output_size,
+#         )
+#         return model, channels
 
-    #     history_frames = int(state_dict["position_embedding"].shape[0])
-    #     output_size = int(state_dict["head.4.weight"].shape[0])
-    #     input_dim = int(state_dict["frame_encoder.0.weight"].shape[1])
-    #     channels = max(1, input_dim // (image_size[0] * image_size[1]))
-    #     model = ALVINNITA(
-    #         imagesize_hw=image_size,
-    #         color_channels=channels,
-    #         history_frames=history_frames,
-    #         output_size=output_size,
-    #     )
-    #     return model, channels
+#     if model_name.startswith("calvinn"):
+#         channels = int(state_dict["features.0.net.0.weight"].shape[1])
+#         model = CALVINN(imagesize_hw=image_size, color_channels=channels)
+#         return model, channels
+
+#     if model_name.startswith("melvinn"):
+#         input_units = int(state_dict["net.0.net.0.weight"].shape[1])
+#         channels = max(1, input_units // (image_size[0] * image_size[1]))
+#         model = MELVINN(imagesize_hw=image_size, color_channels=channels)
+#         return model, channels
+
+
+#     model = ALVINN(imagesize_hw=image_size)
+#     return model, 1
+
+def _build_model_from_checkpoint(model_name, image_size, state_dict):
+    rospy.logwarn(f"NOTE building model: {model_name}...")
+    if model_name.startswith("alvinnita"):
+        
+        history_frames = int(state_dict["position_embedding"].shape[0])
+        output_size = int(state_dict["head.4.weight"].shape[0])
+        input_dim = int(state_dict["frame_encoder.0.weight"].shape[1])
+        channels = max(1, input_dim // (image_size[0] * image_size[1]))
+        model = ALVINNITA(
+            imagesize_hw=image_size,
+            color_channels=channels,
+            history_frames=history_frames,
+            output_size=output_size,
+        )
+        return model, channels
 
     if model_name.startswith("calvinn"):
         channels = int(state_dict["features.0.net.0.weight"].shape[1])
@@ -65,7 +108,9 @@ def _build_model_from_checkpoint(model_name, image_size, state_dict):
 
 
 def load_model_from_ros_params():
-    model_path = rospy.get_param("~model_path", DEFAULT_MODEL_PATH)
+    model_path = DEFAULT_MODEL_PATH
+    # print model path
+    rospy.logwarn(f"CDEBUG: Using model path BARELY SET: {model_path}")
     model_utils_dir = rospy.get_param("~model_utils_dir", DEFAULT_MODEL_UTILS_DIR)
     requested_device = str(rospy.get_param("~device", "auto")).strip().lower()
     if requested_device == "auto":
@@ -91,6 +136,9 @@ def load_model_from_ros_params():
     if len(raw_image_size) != 2:
         raise ValueError(f"Invalid image_size in checkpoint: {raw_image_size}")
     image_size = (int(raw_image_size[0]), int(raw_image_size[1]))
+
+    # print model path
+    rospy.logwarn(f"CDEBUG: Using model path: {model_path}")
 
     model, model_input_channels = _build_model_from_checkpoint(
         ckpt_model_name,
